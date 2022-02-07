@@ -21,7 +21,7 @@ import {
 import { OrbitControls } from './OrbitControls.js'
 
 
-let scene, camera, renderer, plan, raycaster, mouse, box, amblight, controls;
+let scene, camera, renderer, plan, raycaster, mouse, boxes, amblight, controls;
 let isMouseDown = false;
 
 let clk = new Clock();
@@ -40,9 +40,9 @@ function setupScene() {
   camera.position.y = 2;
   camera.position.x = 2;
   
-  plan = new Mesh(new PlaneBufferGeometry(10, 10), new MeshBasicMaterial({visible:true}));
+  plan = new Mesh(new PlaneBufferGeometry(10, 10), new MeshStandardMaterial({visible:true}));
   plan.rotation.x = - Math.PI / 2;
-  amblight = new AmbientLight(0xACACAC, 0.5);
+  amblight = new AmbientLight(0xACACAC, 0.8);
 
   raycaster = new Raycaster();
   renderer = new WebGLRenderer({ antialias: true });
@@ -53,6 +53,9 @@ function setupScene() {
   renderer.domElement.addEventListener("pointermove", mouseMove);
   renderer.domElement.addEventListener("pointerup", mouseUp);
   controls = new OrbitControls( camera, renderer.domElement );
+  const light = new PointLight(0xffffff, 1.0);
+  light.position.y = 1.5;
+  scene.add(light);
   scene.add(plan);
   scene.add(amblight);
   controls.update();
@@ -67,18 +70,23 @@ function resize(){
 }
 function animate() {
   let t = clk.getElapsedTime();
-  box.rotation.x += 0.05;
-  box.rotation.z += 0.05;
-  box.position.x = 3 * Math.cos(t);
-  box.position.z = 3 * Math.sin(t);
   renderer.render(scene, camera);
 }
 
 function initialise(){
+  boxes = []
+  boxes.push(new Mesh(new BoxBufferGeometry(), new MeshStandardMaterial({color:0x00ff00, depthTest: false})));
+  boxes.push(new Mesh(new BoxBufferGeometry(), new MeshStandardMaterial({color:0xffff00, depthTest: false})));
+  boxes.push(new Mesh(new BoxBufferGeometry(), new MeshStandardMaterial({color:0x00ffff, depthTest: false})));
 
-  box = new Mesh(new BoxBufferGeometry(), new MeshStandardMaterial({color:0x00ff00}));
-  box.position.y= 0.6;
-  scene.add(box);
+  boxes.forEach(box=>{
+    box.position.y = 0.6;
+    box.renderOrder = Math.round(10* Math.random()); 
+    box.position.x = 5 * Math.random();
+    box.position.z = 5 * Math.random();
+    scene.add(box);
+  });
+  
 
 
 }
