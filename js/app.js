@@ -23,6 +23,7 @@ import {
   MeshPhysicalMaterial,
   CubeTextureLoader,
   TorusKnotBufferGeometry,
+  ShaderMaterial,
 } from "./three.module.js";
 import {M_opal, opalShader} from './shaders.js'
 import { OrbitControls } from './OrbitControls.js'
@@ -68,24 +69,24 @@ let radianceMap = loadCubeMap('./assets/radiance');
 M_iridescent = new IridescentMaterial(irradianceMap, radianceMap, iridescentMap);
 M_iridescent.boost = opalParams.boost;
 M_iridescent.color = opalParams.color;
-gui.add(opalParams,'filmThickness', 0, 1000, 10).onChange(()=>{
-  iridescentMap.filmThickness = opalParams.filmThickness;
-});
-gui.add(opalParams,'refractiveIndexFilm', 0, 10, 0.1).onChange(()=>{
-  iridescentMap.refractiveIndexFilm = opalParams.refractiveIndexFilm;
-});
-gui.add(opalParams,'refractiveIndexBase', 0, 10, 0.1).onChange(()=>{
-  iridescentMap.refractiveIndexBase = opalParams.refractiveIndexBase;
-});                            
-gui.add(opalParams,'size', 0, 1024, 8).onChange(()=>{
-  iridescentMap.size = opalParams.size;
-});
-gui.add(opalParams,'boost', 1, 30, 0.1).onChange(()=>{
-  M_iridescent.boost = opalParams.boost;
-});
-gui.addColor(opalParams,'color').onChange(()=>{
-  M_iridescent.color = opalParams.color;
-});
+// gui.add(opalParams,'filmThickness', 0, 1000, 10).onChange(()=>{
+//   iridescentMap.filmThickness = opalParams.filmThickness;
+// });
+// gui.add(opalParams,'refractiveIndexFilm', 0, 10, 0.1).onChange(()=>{
+//   iridescentMap.refractiveIndexFilm = opalParams.refractiveIndexFilm;
+// });
+// gui.add(opalParams,'refractiveIndexBase', 0, 10, 0.1).onChange(()=>{
+//   iridescentMap.refractiveIndexBase = opalParams.refractiveIndexBase;
+// });                            
+// gui.add(opalParams,'size', 0, 1024, 8).onChange(()=>{
+//   iridescentMap.size = opalParams.size;
+// });
+// gui.add(opalParams,'boost', 1, 30, 0.1).onChange(()=>{
+//   M_iridescent.boost = opalParams.boost;
+// });
+// gui.addColor(opalParams,'color').onChange(()=>{
+//   M_iridescent.color = opalParams.color;
+// });
 let isMouseDown = false;
 let time = 0.0;
 let clk = new Clock();
@@ -100,13 +101,13 @@ function setupScene() {
     0.1,
     100
   );
-  camera.position.z = 4;
+  camera.position.z = 10;
   camera.position.y = 2;
   camera.position.x = 2;
   
-  plan = new Mesh(new PlaneBufferGeometry(10, 10), new MeshStandardMaterial({visible:true}));
+  plan = new Mesh(new PlaneBufferGeometry(100, 10), new MeshStandardMaterial({visible:true}));
   plan.rotation.x = - Math.PI / 2;
-  amblight = new AmbientLight(0xACACAC, 0.8);
+  amblight = new AmbientLight(0xffffff, 3.0);
 
   raycaster = new Raycaster();
   renderer = new WebGLRenderer({ antialias: true });
@@ -119,7 +120,9 @@ function setupScene() {
   renderer.domElement.addEventListener("pointerup", mouseUp);
   controls = new OrbitControls( camera, renderer.domElement );
   const light = new PointLight(0xffffff, 1.0);
-  light.position.y = 1.5;
+  light.position.y = 10000.5;
+  light.position.x = 50100;
+  light.position.z = 50;
   //scene.add(light);
   //scene.add(plan);
   scene.add(amblight);
@@ -158,6 +161,7 @@ function animate() {
     //box.scale.y = 1.0 + 0.25 *Math.cos(t);
     box.rotation.z += 0.05;
   }); */
+  opalShader.uniforms.AmbientLight
   opalShader.uniforms.iTime.value = time; 
   opalShader.uniforms.eye.value = camera.position; 
   renderer.render(scene, camera);
@@ -166,11 +170,23 @@ function animate() {
 function initialise(){
   boxes = []
   const sphGeom = new SphereBufferGeometry();
+  // const sphGeom = new SphereGeometry(2,64,32);
+
   //const sphGeom = new TorusKnotBufferGeometry(1.0, 0.4, 128, 32);
 
   /* boxes.push(new Mesh(sphGeom, new MeshStandardMaterial({color:0x00ff00, depthTest: false})));
   boxes.push(new Mesh(sphGeom, new MeshStandardMaterial({color:0xffff00, depthTest: false}))); */
-  boxes.push(new Mesh(sphGeom, M_iridescent));
+  // boxes.push(new Mesh(sphGeom, M_iridescent));
+  // const mesh = new Mesh(sphGeom, M_opal);
+  // const mesh = new Mesh(sphGeom, new MeshStandardMaterial({color:0xffff00, depthTest: false}));
+  // mesh.position.set(2,2,0);
+  // boxes.push(mesh);
+  boxes.push(new Mesh(sphGeom, new ShaderMaterial({
+    vertexShader: M_opal.vertexShader,
+    fragmentShader:M_opal.fragmentShader,
+  }))); 
+  boxes.push(new Mesh(sphGeom, M_opal)); 
+  // boxes.push(new Mesh(sphGeom, new MeshStandardMaterial({color:0xffff00, depthTest: false}))); 
   opalShader.uniforms.iResolution.value.copy(new Vector3(window.innerWidth, window.innerHeight,1.0));
   opalShader.uniforms.fov.value = camera.fov; 
 

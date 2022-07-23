@@ -23,18 +23,18 @@ export const opalShader = {
 'uniform vec3      center;',               // Camera target
 'uniform float     fov;',               // Camera target
 
-'const int MAX_MARCHING_STEPS = 1000;',
+'const int MAX_MARCHING_STEPS = 1200;',
 'const float MIN_DIST = 0.0;',
-'const float MAX_DIST = 100.0;',
-'const float EPSILON = 0.001;',
+'const float MAX_DIST = 50.0;',
+'const float EPSILON = 0.000001;',
 
-'const float scale = EPSILON*1000.0;',
+'const float scale = EPSILON*100000.0;',
 'varying vec3 vNormal;',
 'varying vec2 vUv;',
 'vec3 animate(vec3 p){',
 '    vec3 p1 = p;',
     //p1 /= 1.1;
-'    float d = 200.0;',
+'    float d = 1000.0;',
 '    return p+(sin(p1.zxy/d)+cos(p1.zxy/d))*d;',
 '}',
 
@@ -52,7 +52,7 @@ export const opalShader = {
     	//p += sin(iTime);
 '        p += animate(p*2.0-to_return)/3.0;',
 '        p /= 2.0;',
-'        to_return -= .5;',
+'        to_return -= .9;',
 '        to_return = min(to_return,4.5 +sin(length(p*10.0)/10.0) + sin(p.x/5.0)+cos(p.y/5.0)+cos(p.z/5.0));',
         //to_return -= 1.5;
 '    }',
@@ -62,8 +62,9 @@ export const opalShader = {
 
 'vec3 surface_color(in vec3 uv)',
 '{',
-'   uv *= 10.0;',
-'   return sin(vec3(sceneSDF(uv/2.0),sceneSDF(uv/3.0),sceneSDF(uv/5.0))/5.0);',
+'   uv *= 1000.0;',
+'   return vec3(1.0,.0,0.0);',
+// '   return sin(vec3(sceneSDF(uv/2.0),sceneSDF(uv/3.0),sceneSDF(uv/5.0))/5.0);',
 '}',
 
 /**
@@ -205,7 +206,7 @@ export const opalShader = {
 '        viewDir.xz *= rot(3.14-iMouse.x/iResolution.x*3.14*2.0);',
 '    }',
     
-//'    vec3 eye = scale*vec3(sin(iTime/5.0), cos(iTime/5.0), -iTime)*10.0; ',
+'    vec3 eye = scale*vec3(sin(iTime/5.0), cos(iTime/5.0), -iTime)*10.0; ',
 '    mat3 viewToWorld = viewTransform(eye, vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));',
     
 '    vec3 worldDir = viewToWorld * -viewDir;',
@@ -225,15 +226,15 @@ export const opalShader = {
     
 '    vec3 K_a = surface_color(vec3(vUv, 0.0));',
 '    vec3 K_d = K_a;',
-'    vec3 K_s = vec3(1.0, 1.0, 1.0);',
-'    float shininess = 10.0;',
+'    vec3 K_s = vec3(1.0, 1.0, 1.0);', // color of the circle light on surfacre
+'    float shininess = 50.0;',
 '    vec3 color = phongIllumination(K_a, K_d, K_s, shininess, p, eye);',
     
 '    fragColor = vec4(color, 1.0);',
 
 '}',
 'void main() {',
-'    vec4 color;',
+'    vec4 color = vec4(1.0,0.0,0.0,1.0);',
 '    mainImage(color, gl_FragCoord.xy);',
 '    gl_FragColor.xyz = color.xyz;',
 '}',
