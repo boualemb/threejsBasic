@@ -30,7 +30,8 @@ import { OrbitControls } from './OrbitControls.js'
 import {EXRLoader} from './EXRLoader.js'
 import {ThinFilmFresnelMap} from './ThinFilmFresnelMap.js';
 import {IridescentMaterial} from './IridescentMaterial.js';
-
+import { GLTFLoader } from './GLTFLoader.js'
+// import Stats from './stats.module.js'
 
 const gui = new GUI();
 let scene, camera, renderer, plan, raycaster, mouse, boxes, amblight, controls, M_iridescent;
@@ -101,13 +102,13 @@ function setupScene() {
     0.1,
     100
   );
-  camera.position.z = 10;
+  camera.position.z = 2;
   camera.position.y = 2;
   camera.position.x = 2;
   
   plan = new Mesh(new PlaneBufferGeometry(100, 10), new MeshStandardMaterial({visible:true}));
   plan.rotation.x = - Math.PI / 2;
-  amblight = new AmbientLight(0xffffff, 3.0);
+  amblight = new AmbientLight(0xffffff, 1.0);
 
   raycaster = new Raycaster();
   renderer = new WebGLRenderer({ antialias: true });
@@ -120,9 +121,9 @@ function setupScene() {
   renderer.domElement.addEventListener("pointerup", mouseUp);
   controls = new OrbitControls( camera, renderer.domElement );
   const light = new PointLight(0xffffff, 1.0);
-  light.position.y = 10000.5;
-  light.position.x = 50100;
-  light.position.z = 50;
+  light.position.y = 2.;
+  light.position.x = 0.0;
+  light.position.z = 0.0;
   //scene.add(light);
   //scene.add(plan);
   scene.add(amblight);
@@ -166,10 +167,61 @@ function animate() {
   opalShader.uniforms.eye.value = camera.position; 
   renderer.render(scene, camera);
 }
+let mesh;
+            function createScene( geometry, scale, material ) {
 
+mesh = new THREE.Mesh( geometry, material );
+
+// mesh.position.y = - 50;
+mesh.scale.set( scale, scale, scale );
+mesh.rotation.set( Math.PI /2, 0.0, 0.0 );
+
+// mesh.castShadow = true;
+// mesh.receiveShadow = true;
+// boxes.push(mesh);
+scene.add( mesh );
+
+}
 function initialise(){
   boxes = []
   const sphGeom = new SphereBufferGeometry();
+
+  const loader = new GLTFLoader()
+  loader.load(
+      './../assets/cabochon.glb',
+      function (gltf) {
+          gltf.scene.traverse(function (child) {
+              if (child.isMesh) {
+                  // child.material = material
+                  // child.receiveShadow = true
+                  // child.castShadow = true
+                  
+                  createScene( child.geometry, 3.0, new ShaderMaterial({
+                    vertexShader: M_opal.vertexShader,
+                    fragmentShader:M_opal.fragmentShader,
+                  }) );
+                  // child.position.set(0.0, 0.0, 1.0)
+              }
+              // if (child .isLight) {
+              //     const l = child
+              //     l.castShadow = true
+              //     l.shadow.bias = -.003
+              //     l.shadow.mapSize.width = 2048
+              //     l.shadow.mapSize.height = 2048
+              // }
+          })
+          
+          // scene.add(gltf.scene)
+  
+          // createScene( gltf.scene.children[ 0 ].geometry, 1.0, material );
+      },
+      (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+      },
+      (error) => {
+          console.log(error)
+      }
+  )
   // const sphGeom = new SphereGeometry(2,64,32);
 
   //const sphGeom = new TorusKnotBufferGeometry(1.0, 0.4, 128, 32);
@@ -181,11 +233,12 @@ function initialise(){
   // const mesh = new Mesh(sphGeom, new MeshStandardMaterial({color:0xffff00, depthTest: false}));
   // mesh.position.set(2,2,0);
   // boxes.push(mesh);
-  boxes.push(new Mesh(sphGeom, new ShaderMaterial({
-    vertexShader: M_opal.vertexShader,
-    fragmentShader:M_opal.fragmentShader,
-  }))); 
-  boxes.push(new Mesh(sphGeom, M_opal)); 
+//////////////////////////////////////////////
+  // boxes.push(new Mesh(sphGeom, new ShaderMaterial({
+  //   vertexShader: M_opal.vertexShader,
+  //   fragmentShader:M_opal.fragmentShader,
+  // }))); 
+  // boxes.push(new Mesh(sphGeom, M_opal)); 
   // boxes.push(new Mesh(sphGeom, new MeshStandardMaterial({color:0xffff00, depthTest: false}))); 
   opalShader.uniforms.iResolution.value.copy(new Vector3(window.innerWidth, window.innerHeight,1.0));
   opalShader.uniforms.fov.value = camera.fov; 
