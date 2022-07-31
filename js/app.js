@@ -120,12 +120,12 @@ function setupScene() {
   renderer.domElement.addEventListener("pointermove", mouseMove);
   renderer.domElement.addEventListener("pointerup", mouseUp);
   controls = new OrbitControls( camera, renderer.domElement );
-  const light = new PointLight(0xffffff, 1.0);
-  light.position.y = 2.;
+  const light = new PointLight(0xff0000, 1.0,0.2,0.2);
+  light.position.y = 5.;
   light.position.x = 0.0;
   light.position.z = 0.0;
-  //scene.add(light);
-  //scene.add(plan);
+  scene.add(light);
+  scene.add(plan);
   scene.add(amblight);
   const loader = new EXRLoader();
   let hdrCubeMap;
@@ -143,7 +143,8 @@ function setupScene() {
     //this.background = hdrCubeMap;
     texture.dispose();
   });  */
-  scene.background = radianceMap = loadCubeMap('./assets/studio','.png');
+  scene.background = new Color(0x888888)
+  // scene.background = radianceMap = loadCubeMap('./assets/studio','.png');
   controls.update();
   window.addEventListener('resize', resize );
 }
@@ -176,9 +177,9 @@ mesh = new THREE.Mesh( geometry, material );
 mesh.scale.set( scale, scale, scale );
 mesh.rotation.set( Math.PI /2, 0.0, 0.0 );
 
-// mesh.castShadow = true;
-// mesh.receiveShadow = true;
-// boxes.push(mesh);
+mesh.castShadow = true;
+mesh.receiveShadow = true;
+boxes.push(mesh);
 scene.add( mesh );
 
 }
@@ -193,22 +194,22 @@ function initialise(){
           gltf.scene.traverse(function (child) {
               if (child.isMesh) {
                   // child.material = material
-                  // child.receiveShadow = true
-                  // child.castShadow = true
+                  child.receiveShadow = true
+                  child.castShadow = true
                   
-                  createScene( child.geometry, 3.0, new ShaderMaterial({
+                  createScene( child.geometry, 2.0, new ShaderMaterial({
                     vertexShader: M_opal.vertexShader,
                     fragmentShader:M_opal.fragmentShader,
                   }) );
                   // child.position.set(0.0, 0.0, 1.0)
               }
-              // if (child .isLight) {
-              //     const l = child
-              //     l.castShadow = true
-              //     l.shadow.bias = -.003
-              //     l.shadow.mapSize.width = 2048
-              //     l.shadow.mapSize.height = 2048
-              // }
+              if (child .isLight) {
+                  const l = child
+                  l.castShadow = true
+                  l.shadow.bias = -.03
+                  l.shadow.mapSize.width = 2048
+                  l.shadow.mapSize.height = 2048
+              }
           })
           
           // scene.add(gltf.scene)

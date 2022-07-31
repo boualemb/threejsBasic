@@ -169,12 +169,12 @@ export const opalShader = {
  *
  * See https://en.wikipedia.org/wiki/Phong_reflection_model#Description
  */
-'vec3 phongIllumination(vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye) {',
+'vec3 phongIllumination(vec3 c, vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye) {',
 '    const vec3 ambientLight = 0.5 * vec3(1.0, 1.0, 1.0);',
-'    vec3 color = ambientLight * k_a;',
-    
-'    vec3 light1Pos = eye;',
-'    vec3 light1Intensity = vec3(0.4, 0.4, 0.4);',
+'    k_a=vec3(0.10);',
+'    vec3 color = 0.85*c+0.15*ambientLight * k_a;',
+'    vec3 light1Pos = vec3(0.0,2.0,.0);',
+'    vec3 light1Intensity = vec3(0.7, 0.8, 0.8);',
     
 '    color += phongContribForLight(k_d, k_s, alpha, p, eye,',
 '                                  light1Pos,',
@@ -309,17 +309,18 @@ export const opalShader = {
 '    vec3 K_a = surface_color(vec3(vUv, .80));',
 '    vec3 K_d = K_a;',
 '    vec3 K_s = vec3(.80, 1.0,1.0);', // color of the circle light on surfacre
-'    float shininess = 2.;',
-'    vec3 color = phongIllumination(K_a, K_d, K_s, shininess, pp, eye);',
-'    vec3 orginal = mix(col, K_a*color, 0.12);',
+'    float shininess = 10.;',
+'    vec3 color = phongIllumination(col ,K_a, K_d, K_s, shininess, pp, eye);',
+// '    vec3 orginal = mix(col, K_a*color, 0.12);',
 '    //vec3 color = mix(col1, col1, 0.5 );',
 '    ',
-'    fragColor = vec4(orginal,1.0);',
+'    fragColor = vec4(color,1.0);',
+// '    fragColor = vec4(orginal,1.0);',
 '}',
 // 'void mainImage( out vec4 fragColor, in vec2 fragCoord )',
 // '{',
 // '	vec3 viewDir = rayDirection(45.0, iResolution.xy, fragCoord);',
-// '    if (length(iMouse.xy) > 40.0) {',
+// '    if (length(iMouse.xy) > 20.0) {',
 // '        viewDir.yz *= rot(3.14*0.5-iMouse.y/iResolution.y*3.14);',
 // '        viewDir.xz *= rot(3.14-iMouse.x/iResolution.x*3.14*2.0);',
 // '    }',
