@@ -34,7 +34,7 @@ import { GLTFLoader } from './GLTFLoader.js'
 // import Stats from './stats.module.js'
 
 const gui = new GUI();
-let scene, camera, renderer, plan, raycaster, mouse, boxes, amblight, controls, M_iridescent;
+let scene, camera, renderer, plan, raycaster, mouse,mom , boxes, amblight, controls, M_iridescent;
 
 const envMapPath = '../assets/19smE_soft_02.exr';
 let pearl_params = {color:0xffffff,
@@ -159,13 +159,19 @@ function resize(){
 function animate() {
   let t = clk.getElapsedTime();
   time +=new Clock().getDelta();
-  /* boxes.forEach(box=>{
+   boxes.forEach(box=>{
     //box.scale.y = 1.0 + 0.25 *Math.cos(t);
-    box.rotation.z += 0.05;
-  }); */
+    // box.rotation.z += 0.005;
+  }); 
   opalShader.uniforms.AmbientLight
   opalShader.uniforms.iTime.value = time; 
-  opalShader.uniforms.eye.value = camera.position; 
+  opalShader.uniforms.eye.value = camera.position;
+  mouseDown();
+  if(mom == null){
+    mom = new Vector2();
+  }
+  opalShader.uniforms.mouse.value = 1000.0*mom;
+  // console.log(camera.position) 
   renderer.render(scene, camera);
 }
 let mesh;
@@ -260,7 +266,13 @@ function getPointer(e) {
   );
 }
 function mouseDown(e) {
+  try{
   mouse = getPointer(e);
+  mom = new Vector2(mouse.x*.0,mouse.y);
+  console.log("move ", mouse);
+  }catch(e){
+
+  }
   /* raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects();
   if (intersects.length > 0) {

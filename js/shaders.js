@@ -1,4 +1,4 @@
-import { ShaderMaterial, Vector3, Vector4 } from "./three.module.js";
+import { ShaderMaterial, Vector2, Vector3, Vector4 } from "./three.module.js";
 
 
 
@@ -22,6 +22,7 @@ export const opalShader = {
 'uniform vec3      eye;',               // Camera position
 'uniform vec3      center;',               // Camera target
 'uniform float     fov;',               // Camera target
+'uniform vec2     mouse;',               // Camera target
 
 'const int MAX_MARCHING_STEPS = 1000;',
 'const float MIN_DIST = 0.0;',
@@ -170,15 +171,19 @@ export const opalShader = {
  * See https://en.wikipedia.org/wiki/Phong_reflection_model#Description
  */
 'vec3 phongIllumination(vec3 c, vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye) {',
-'    const vec3 ambientLight = 0.5 * vec3(1.0, 1.0, 1.0);',
-'    k_a=vec3(0.10);',
-'    vec3 color = 0.85*c+0.15*ambientLight * k_a;',
-'    vec3 light1Pos = vec3(0.0,2.0,.0);',
-'    vec3 light1Intensity = vec3(0.7, 0.8, 0.8);',
-    
-'    color += phongContribForLight(k_d, k_s, alpha, p, eye,',
+'    const vec3 ambientLight = 0.2 * vec3(1.0, 1.0, 1.0);',
+'    k_a=vec3(0.20);',
+'    vec3 color = 0.75*c+0.25*ambientLight * k_a;',
+'    vec3 light1Pos = vec3(0.0,-.00,-0.90);',
+'    vec3 light1Intensity = vec3(0.8, 0.8, 0.8);',
+'    vec3 tmp = phongContribForLight(k_d, k_s, alpha, p, eye,',
 '                                  light1Pos,',
 '                                  light1Intensity);',
+'       if(tmp.x == 0.){',
+'           color =color/1.5 + 0.7*tmp;',
+'       }',
+'       else  ',
+'           color += 0.7*tmp;',
     
 '    return color;',
 '}',
@@ -199,10 +204,20 @@ export const opalShader = {
 '}',
 'vec2 cinv( vec2 z)  { float d = dot(z,z); return vec2( z.x, -z.y ) / d; }',
 '',
+'float rand(vec2 co){',
+'    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);',
+'}',
 'void mainImage( out vec4 fragColor, in vec2 fragCoord )',
 '{',
 // '	vec2 p =0.01*(-1.2*iResolution.xx-fragCoord.xx);',
-'	vec2 p =0.001*(iResolution.xy+1.875*fragCoord.xy);',
+// '    if(mouse.x > 0.0) xx = mouse.x;',
+// '    else',
+// '       xx = mouse.x/10.0 * vNormal.y;',
+// '       xx = mouse.x/10.0 * vNormal.y;',
+// '	vec2 p =0.000051*10.0*(vNormal.xy*iResolution.xy+1.875*fragCoord.xy);',
+'   float xx = (30.0)*(vNormal.x)+mouse.y*20.5;',
+'   float yy = (50.0)*vNormal.y+mouse.x*30.5;',
+'	vec2 p =0.000051*(xx+yy)*(-iResolution.xy+1.875*fragCoord.xy);',
 '    //vec3 col, col1;',
 '	',
 '    ',
@@ -222,12 +237,12 @@ export const opalShader = {
 // '		z.x-= 1.5;',
 // '		z*=1.5;',
 // '	}*/',
-'	//c = (iMouse.z>0.)?1.2*(-iResolution.xy+2.0*iMouse.xy)/iResolution.y:vec2(-1.14,0.533);',
-'    c = vec2(-50.,-1);',
-'	z.x-= 30.;',
-'    z.y-= 2.0;',
+//'	c = (iMouse.z>0.)?1.2*(-iResolution.xy+2.0*iMouse.xy)/iResolution.y:vec2(-1.14,0.533);',
+'    c = vec2(-0.,-1);',
+'	z.x-= 0.5;',
+'    z.y-= 1.0;',
 '	z*=0.8;',
-'	for( int i=0; i<64; i++ ) ',
+'	for( int i=0; i<50; i++ ) ',
 '	{',
 '		z.x=abs(z.x);',
 '		z=(cinv(z))+c;',
@@ -236,16 +251,16 @@ export const opalShader = {
 '		g = min( g, dot(z+c,z+c));',
 '	}',
 '	',
-'	f = 1.0+log(f)/15.0 + log(f)/15.0;',
-'	g = 1.0+log(g)/10.0 + log(g)/10.0;',
+'	f = 1.0+log(f)/5.0 + log(f)/5.0;',
+'	g = 1.0+log(g)/6.0 + log(g)/6.0;',
 '    ',
 '    /********************************/',
 '    ',
-'    cc = vec2(-0.145,-0.945);',
-'	zz.x-= 1.0;',
-'    zz.y-= 1.2;',
-'	zz*=1.5;',
-'	for( int i=0; i<2; i++ ) ',
+'    cc = vec2(-0.45,-0.245);',
+'	zz.x= zz.x - 20.0*mouse.x - 0.20;',
+'    zz.y= zz.y - mouse.y -.22;',
+'	zz= zz*1.1 ;',
+'	for( int i=0; i<10; i++ ) ',
 '	{',
 '		zz.x=abs(zz.x);',
 '		zz=(cinv(zz))+cc;',
@@ -255,14 +270,14 @@ export const opalShader = {
 
 '	}',
 '	',
-'	ff = .50+log(ff)/16.0 + log(ff)/16.0;',
-'	gg = .80+log(gg)/10.0 + log(gg)/10.0;',
+'	ff = (rand(20.0*vec2(mouse.x,mouse.y))+0.5)+log(ff)/(3.0+mouse.y) + log(ff)/3.0;',
+'	gg = (0.8)+log(gg)/(3.0+mouse.x) + log(gg)/5.0;',
 '    ',
 '    ',
 '    /**********************************/',
 '	',
-'	vec3 col = 1.-g*abs(vec3(g*0.2,f*0.5*g*0.3,f*f*0.2)); // فيروزي',
-'	vec3 col1 = 1.-gg*abs(vec3(gg*0.8,ff*0.3*gg*0.5,ff*ff*0.5)); ',
+'	vec3 col = 1.-g*abs(vec3(g*0.8,f*0.2*g*0.3,f*f*0.5)); // فيروزي',
+'	vec3 col1 = 1.-gg*abs(vec3(gg*0.8,ff*0.3*gg*0.5,ff*ff*0.2)); ',
 '    //col = 1.-g*abs(vec3(g*0.4,f*0.3*g*0.3,f*0.5)); ',
 '	',
 '	/*col = mix(col, vec3(1.),PrintValue((p-vec2(0.3,1.))/.07, c.x,5.,3.));',
@@ -273,7 +288,7 @@ export const opalShader = {
 '    ',
 '',
 '	//col = mix(col, vec3(1.),PrintValue((p-vec2(0.9,1.))/.07, c.y,5.,3.));',
-'    col = mix(col, col1,0.9);',
+'    col = mix(col, col1,0.5);',
 '',
 //'    fragColor = vec4(col,1.0);',
 //'    return;',
@@ -282,16 +297,16 @@ export const opalShader = {
 '',
 '    ',
 '    ',
-'	vec3 viewDir = rayDirection(45.0, iResolution.xy, fragCoord);',
-'    if (length(iMouse.xy) > 40.0) {',
+'	vec3 viewDir = rayDirection(120.0, iResolution.xy, fragCoord);',
+'    if (length(iMouse.xy) > 80.0) {',
 '        viewDir.yz *= rot(3.14*0.5-iMouse.y/iResolution.y*3.14);',
 '        viewDir.xz *= rot(3.14-iMouse.x/iResolution.x*3.14*2.0);',
 '    }',
     
-'    vec3 eye = scale*vec3(sin(iTime/10.0), cos(iTime/10.0), -iTime)*10.0; ',
+'    vec3 eye = scale*vec3(sin(-5./10.0), cos(-0.5/10.0), -iTime)*10.0; ',
 '    mat3 viewToWorld = viewTransform(eye, vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, .0));',
     
-'    vec3 worldDir = viewToWorld * -viewDir;',
+'    vec3 worldDir = viewToWorld *viewDir;',
     
 '    float dist = shortestDistanceToSurface(eye, worldDir, MIN_DIST, MAX_DIST);',
     
@@ -306,10 +321,10 @@ export const opalShader = {
 /* '    p.x = vUv.x',
 '    p.z = vUv.y', */
     
-'    vec3 K_a = surface_color(vec3(vUv, .80));',
+'    vec3 K_a = 0.80*surface_color(vec3(vUv, .80));',
 '    vec3 K_d = K_a;',
 '    vec3 K_s = vec3(.80, 1.0,1.0);', // color of the circle light on surfacre
-'    float shininess = 10.;',
+'    float shininess = 50.;',
 '    vec3 color = phongIllumination(col ,K_a, K_d, K_s, shininess, pp, eye);',
 // '    vec3 orginal = mix(col, K_a*color, 0.12);',
 '    //vec3 color = mix(col1, col1, 0.5 );',
@@ -365,6 +380,7 @@ export const opalShader = {
         iMouse : {value : new Vector4()},
         eye : {value : new Vector3()},
         center : {value : new Vector3()},
+        mouse : {value: new Vector2()},
     }
 }
 
