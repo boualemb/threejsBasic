@@ -91,6 +91,7 @@ M_iridescent.color = opalParams.color;
 let isMouseDown = false;
 let time = 0.0;
 let clk = new Clock();
+clk.start();
 setupScene();
 initialise();
 
@@ -106,11 +107,14 @@ function setupScene() {
   camera.position.y = 2;
   camera.position.x = 2;
   
-  plan = new Mesh(new PlaneBufferGeometry(100, 10), new MeshStandardMaterial({visible:true}));
+  plan = new Mesh(new PlaneBufferGeometry(4, 4), new MeshStandardMaterial({visible:true}));
   plan.rotation.x = - Math.PI / 2;
-  amblight = new AmbientLight(0xffffff, 1.0);
+  plan.position.set(0.0,-0.5);
+  plan.castShadow = true;
+  plan.receiveShadow = true;
+  amblight = new AmbientLight(0xffffff, .80);
 
-  raycaster = new Raycaster();
+  raycaster = new Raycaster(0.0,);
   renderer = new WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   
@@ -120,8 +124,8 @@ function setupScene() {
   renderer.domElement.addEventListener("pointermove", mouseMove);
   renderer.domElement.addEventListener("pointerup", mouseUp);
   controls = new OrbitControls( camera, renderer.domElement );
-  const light = new PointLight(0xff0000, 1.0,0.2,0.2);
-  light.position.y = 5.;
+  const light = new PointLight(0xff0000, .80,0.2,0.2);
+  light.position.y = 0.;
   light.position.x = 0.0;
   light.position.z = 0.0;
   scene.add(light);
@@ -157,21 +161,28 @@ function resize(){
   camera.updateProjectionMatrix();
 }
 function animate() {
-  let t = clk.getElapsedTime();
-  time +=new Clock().getDelta();
+
+  time +=clk.getDelta();
    boxes.forEach(box=>{
-    //box.scale.y = 1.0 + 0.25 *Math.cos(t);
+    // box.scale.y = 1.0 + 0.25 ;
     // box.rotation.z += 0.005;
   }); 
-  opalShader.uniforms.AmbientLight
-  opalShader.uniforms.iTime.value = time; 
+  opalShader.uniforms.AmbientLight = AmbientLight*0.2;
+  opalShader.uniforms['iTime'].value = time; 
+  // opalShader.uniforms["ti"].value = time; 
+  // console.log(opalShader.uniforms.ti.value);
   opalShader.uniforms.eye.value = camera.position;
   mouseDown();
   if(mom == null){
     mom = new Vector2();
   }
-  opalShader.uniforms.mouse.value = 1000.0*mom;
+  // opalShader.uniforms.fov.value = camera.fov; 
+  opalShader.uniforms["iMouse"].value = new Vector2(mom.x,mom.y);
+
   // console.log(camera.position) 
+   console.log("mom",opalShader.uniforms["iMouse"].value); 
+  //  console.log("fov",opalShader.uniforms.fov.value) 
+  //  console.log("eye",  opalShader.uniforms.eye.value ) 
   renderer.render(scene, camera);
 }
 let mesh;
@@ -203,18 +214,19 @@ function initialise(){
                   child.receiveShadow = true
                   child.castShadow = true
                   
-                  createScene( child.geometry, 2.0, new ShaderMaterial({
+                  createScene( child.geometry, 1.0, new ShaderMaterial({
                     vertexShader: M_opal.vertexShader,
                     fragmentShader:M_opal.fragmentShader,
+                    uniforms: opalShader.uniforms
                   }) );
-                  // child.position.set(0.0, 0.0, 1.0)
+                   child.position.set(0.0, .0, 1.0)
               }
               if (child .isLight) {
                   const l = child
                   l.castShadow = true
                   l.shadow.bias = -.03
-                  l.shadow.mapSize.width = 2048
-                  l.shadow.mapSize.height = 2048
+                  l.shadow.mapSize.width = 100
+                  l.shadow.mapSize.height = 100
               }
           })
           
