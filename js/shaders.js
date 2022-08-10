@@ -797,7 +797,7 @@ export var opalShader = {
 'void mainImage( out vec4 f, vec2 g )',
 '{',
 '    //f.xy = iResolution.xy/iResolution.y;',
-'    g = (g*0.005);///iResolution.y;//(g-2.0*f.xy)/f.y;',
+'    g = ((-g+2.0)*2.0)/iResolution.y;///iResolution.y;//(g-2.0*f.xy)/f.y;',
 '    ',
 // '    iTime =1.0;',
 // '    float t = 0.0 * 0.5;',
@@ -986,10 +986,8 @@ export var opalShader = {
 '    vec3 color=(-v - (-1.136))*vec3(.835,.817,.809);',
 '    vec3 color2=(1.064-(0.500)*(v2+-0.056))*vec3(.25,0.075,0.084);',
 '    ',
-// '    color = mix(color, color2, -0.876);',
-// '    color *= mix(color, color2, -0.044);',
-'    color = mix(color, color2, -alpha3);',
-'    color *= mix(color, color2, -alpha4);',
+'    color = mix(color, color2, -0.876);',
+'    color *= mix(color, color2, -0.044);',
 '    ',
 '    fragColor = vec4(color, 1.0);',
 '}',
@@ -1092,7 +1090,7 @@ export var opalShader = {
 'else',
 ' color = color * vec3(1.0) * (0.0+0.2+0.0);',
 '  mainImage5( col, gl_FragCoord.xy );',
-'  color *= col.xyz;//mix(col.xyz, color.xyz,.560);',
+'  color *=mix(col.xyz, color.xyz,.560);',
 ' color = clamp(color, vec3(0.0),vec3(1.0));',
 // ' color *= pow( 0.220, 1.5212)*5.952+0.4512193; //Vign',
 
@@ -1130,5 +1128,3 @@ export var M_opal = new ShaderMaterial({
     uniforms:opalShader.uniforms,
 });
 
-// alpha1 ~ 0.5
-// alpha2 ~ 0.24 & 0.26
