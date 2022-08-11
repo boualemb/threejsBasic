@@ -51,6 +51,14 @@ import {
 const gui = new GUI();
 let scene, camera, renderer, plan, raycaster, mouse, mom, boxes, amblight, controls, M_iridescent;
 
+
+let isMouseDown = false;
+let time = 0.0;
+let clk = new Clock();
+clk.start();
+setupScene();
+initialise();
+
 const envMapPath = '../assets/19smE_soft_02.exr';
 let pearl_params = {
   color: 0xffffff,
@@ -74,10 +82,10 @@ let opalParams = {
   boost: 6.0,
   color: new Color(1.0, 1.0, 1.0),
   size: 128,
-  alpha1:0.4,
-  alpha2:0.45,
-  alpha3:0.35,
-  alpha4:0.35,
+  alpha1:0.50,
+  alpha2:0.26,
+  alpha3:0.21,
+  alpha4:0.12,
   alpha5:0.35,
 }
 
@@ -110,10 +118,10 @@ gui.add(opalParams,'boost', 1, 30, 0.1).onChange(()=>{
 gui.addColor(opalParams,'color').onChange(()=>{
   M_iridescent.color = opalParams.color;
 });
-gui.add(opalParams,'alpha1',0.0,0.5,0.01).onChange(()=>{
+gui.add(opalParams,'alpha1',0.0,0.8,0.01).onChange(()=>{
   opalShader.uniforms['alpha1'].value = (opalParams.alpha1);
 });
-gui.add(opalParams,'alpha2',0.0,0.5,0.01).onChange(()=>{
+gui.add(opalParams,'alpha2',0.0,0.3,0.01).onChange(()=>{
   opalShader.uniforms['alpha2'].value = (opalParams.alpha2);
 });
 gui.add(opalParams,'alpha3',0.0,0.5,0.01).onChange(()=>{
@@ -125,12 +133,7 @@ gui.add(opalParams,'alpha4',0.0,0.5,0.01).onChange(()=>{
 gui.add(opalParams,'alpha5',0.0,0.5,0.01).onChange(()=>{
   opalShader.uniforms['alpha5'].value = (opalParams.alpha5);
 });
-let isMouseDown = false;
-let time = 0.0;
-let clk = new Clock();
-clk.start();
-setupScene();
-initialise();
+
 
 function setupScene() {
   scene = new Scene();
@@ -283,8 +286,9 @@ function initialise() {
 
   const loader = new GLTFLoader()
   loader.load(
+    // './../assets/XR3SPL8TQ.glb',
+    // './../assets/cabochon.glb',
     './../assets/opal.glb',
-    // './../assets/opal.glb',
     function (gltf) {
       gltf.scene.traverse(function (child) {
         if (child.isMesh) {
@@ -299,14 +303,14 @@ function initialise() {
           }));
           // child.position.set(1000.0, 1000.0, 1000.0)
         }
-        if (child.isLight) {
-          const l = child
-          l.castShadow = false
-          l.receiveShadow = false
-          l.shadow.bias = -.3
-          l.shadow.mapSize.width = 1000
-          l.shadow.mapSize.height = 1000
-        }
+        // if (child.isLight) {
+        //   const l = child
+        //   l.castShadow = false
+        //   l.receiveShadow = false
+        //   l.shadow.bias = -.3
+        //   l.shadow.mapSize.width = 1000
+        //   l.shadow.mapSize.height = 1000
+        // }
       })
 
       // scene.add(gltf.scene)
